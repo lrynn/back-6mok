@@ -1,38 +1,85 @@
-from player import Player
+from typing import Final
+
+from utilities import printDebug
+
+# printBoardStatus()에서 요소를 줄넘김 없이 출력할 때 사용합니다.
+def printLine(values) -> None:
+    print(values, end='')
+
 
 class Board:
     def __init__(self, size: int) -> None:
-        self.size = size
+        self.SIZE: Final[int] = size
         self.grid: list = [[0]*size for _ in range(size)]
 
     def isStonePlacedIn(self, x: int, y: int) -> bool:
+        printDebug(4, f"somewhere noticed if stone has placed at ({x}, {y}).")
         return bool(self.grid[x][y])
 
-    def placeStone(self, player: Player, x: int, y: int) -> None:
+    def placeStone(self, player_number: int, x: int, y: int) -> bool:
+        '''
+        returns if stone placed successfully.
+        '''
+        printDebug(3, f"someone tried to place stone at ({x}, {y}).")
         if self.isStonePlacedIn(x, y):
-            return
+            return False
         
-        self.grid[x][y] = player.team
-        return
+        self.grid[x][y] = player_number
+        printDebug(2, f"A stone that number {player_number} has placed at ({x}, {y}).")
+        return True
     
-    def checkWinByLine(self, x, y, dx, dy) -> int:
-        count = self.grid[x][y]
-        nx, ny = x + dx, y + dy
 
-        while 0 <= nx < self.size and 0 <= ny < self.size:
-            if abs(count) == 6:
-                return count // 6
-            
+class BoardStatusProvider:
+    def __init__(self, board: Board) -> None:
+        self.board = board
+        self.BOARD_SIZE: Final[int] = board.SIZE
+
+    def getStatus(self) -> list[list[int]]:
+        printDebug(4, "Somewhere tried to get the game status.")
+        return self.board.grid
+    
+    def printStatus(self) -> None:
+        print("┌─" + "───"*(self.BOARD_SIZE+1) + "─┐")
+        print("│    " + ''.join(f" {x:2}" for x in range(1, self.BOARD_SIZE + 1)) + " │")
+        for y in range(self.BOARD_SIZE):
+            printLine("│ " + f"{str(y+1):2} ")
+            for x in range(self.BOARD_SIZE):
+                printLine("  ")
+                target_grid: int = self.board.grid[x][y]
+                if target_grid == 0:
+                    printLine(" ")
+                elif target_grid > 0:
+                    printLine("●")
+                else:
+                    printLine("○")
+            print(" │")
+        print("└─" + "───"*(self.BOARD_SIZE+1) + "─┘")
+    
+    def checkWinByLine(self, x: int, y: int,
+                            dx: int, dy: int) -> int:
+        
+        count: int = 0
+        nx, ny = x, y
+
+        while 0 <= nx < self.BOARD_SIZE and 0 <= ny < self.BOARD_SIZE:
             # 아무것도 안놔져있을 경우
-            if not self.isStonePlacedIn(x, y):
+            if not self.board.isStonePlacedIn(nx, ny):
                 count = 0
+            # 뭔가 놔져있을 경우
+            elif count==0:
+                count = self.board.grid[nx][ny] // abs(self.board.grid[nx][ny])
 
             # 같은 팀 돌이 연속될 경우
-            elif self.grid[nx][ny] * count > 0:
-                count += 1
+            if self.board.grid[nx][ny] * count > 0:
+                count += 1 if count>0 else -1
             # 다른 팀 돌이 나올 경우
-            elif self.grid[nx][ny] * count < 0:
-                count = self.grid[nx][ny]
+            elif self.board.grid[nx][ny] * count < 0:
+                count = self.board.grid[nx][ny] // abs(self.board.grid[nx][ny])
+        
+            if count:
+                printDebug(3, f"count {count} at ({nx}, {ny}), diff: ({dx}, {dy}).")
+            if abs(count) > 6:
+                return count // 6
                 
             nx += dx
             ny += dy
@@ -40,34 +87,36 @@ class Board:
         return 0
     
     def checkWin(self) -> int:
+        printDebug(3, "Someone tried to check winner.")
+
         # → 방향 검사
         dx, dy = 1, 0
-        for y in range(self.size):
+        for y in range(self.BOARD_SIZE):
             if self.checkWinByLine(0, y, dx, dy):
                 return self.checkWinByLine(0, y, dx, dy)
             
         # ↓ 방향 검사
         dx, dy = 0, 1
-        for x in range(self.size):
+        for x in range(self.BOARD_SIZE):
             if self.checkWinByLine(x, 0, dx, dy):
                 return self.checkWinByLine(x, 0, dx, dy)
             
         # ↘ 방향 검사
         dx, dy = 1, 1
-        for y in range(self.size-6):
+        for y in range(self.BOARD_SIZE):
             if self.checkWinByLine(0, y, dx, dy):
                 return self.checkWinByLine(0, y, dx, dy)
-        for x in range(self.size-6):
+        for x in range(self.BOARD_SIZE):
             if self.checkWinByLine(x, 0, dx, dy):
                 return self.checkWinByLine(x, 0, dx, dy)
             
         # ↗ 방향 검사
         dx, dy = 1, -1
-        for y in range(self.size-6):
+        for y in range(self.BOARD_SIZE):
             if self.checkWinByLine(0, y, dx, dy):
                 return self.checkWinByLine(0, y, dx, dy)
-        for x in range(self.size-6):
-            if self.checkWinByLine(x, self.size-1, dx, dy):
+        for x in range(self.BOARD_SIZE):
+            if self.checkWinByLine(x, self.BOARD_SIZE-1, dx, dy):
                 return self.checkWinByLine(x, 0, dx, dy)
             
         return 0
