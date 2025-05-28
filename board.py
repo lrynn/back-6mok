@@ -39,21 +39,22 @@ class BoardStatusProvider:
         return self.board.grid
     
     def printStatus(self) -> None:
-        print("┌─" + "───"*(self.BOARD_SIZE+1) + "─┐")
-        print("│    " + ''.join(f" {x:2}" for x in range(1, self.BOARD_SIZE + 1)) + " │")
+        print("┌─" + "───"*(self.BOARD_SIZE+2) + "──┐")
+        print("│    " + ''.join(f" {x:2}" for x in range(1, self.BOARD_SIZE + 1)) + "     │")
         for y in range(self.BOARD_SIZE):
             printLine("│ " + f"{str(y+1):2} ")
             for x in range(self.BOARD_SIZE):
                 printLine("  ")
                 target_grid: int = self.board.grid[x][y]
                 if target_grid == 0:
-                    printLine(" ")
+                    printLine("·")
                 elif target_grid > 0:
                     printLine("○")
                 else:
                     printLine("●")
-            print(" │")
-        print("└─" + "───"*(self.BOARD_SIZE+1) + "─┘")
+            print(f"  {str(y+1):2}" + " │")
+        print("│    " + ''.join(f" {x:2}" for x in range(1, self.BOARD_SIZE + 1)) + "     │")
+        print("└─" + "───"*(self.BOARD_SIZE+2) + "──┘")
     
     def checkWinByLine(self, x: int, y: int,
                             dx: int, dy: int) -> int:

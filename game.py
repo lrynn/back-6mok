@@ -71,6 +71,8 @@ def consoleSinglePlay(size: int):
                 input_temp = input()
                 if input_temp == '0':
                     break
+                if input_temp == '-1':
+                    return
 
                 x, y = map(int, input_temp.split())
             except:
