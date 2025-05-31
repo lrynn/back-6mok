@@ -105,9 +105,13 @@ class BoardStatusProvider:
                     return self.checkWinByLine(0, y, dx, dy)
         
         for x in range(self.BOARD_SIZE):
-            for dx, dy in ((0, 1), (1, 1), (1, -1)):
+            for dx, dy in ((0, 1), (1, 1)):
                 if self.checkWinByLine(x, 0, dx, dy):
                     return self.checkWinByLine(x, 0, dx, dy)
+                
+        for x in range(self.BOARD_SIZE):
+            if self.checkWinByLine(x, self.BOARD_SIZE-1, 1, -1):
+                return self.checkWinByLine(x, self.BOARD_SIZE-1, 1, -1)
 
         # → 방향 검사
         # dx, dy = 1, 0
