@@ -39,22 +39,31 @@ class BoardStatusProvider:
         return self.board.grid
     
     def printStatus(self) -> None:
-        print("┌─" + "───"*(self.BOARD_SIZE+2) + "──┐")
-        print("│    " + ''.join(f" {x:2}" for x in range(1, self.BOARD_SIZE + 1)) + "     │")
+        output: str = ''
+        output += "┌─" + "───"*(self.BOARD_SIZE+2) + "──┐" + '\n'
+        output += "│    " + ''.join(f" {x:2}" for x in range(1, self.BOARD_SIZE + 1)) + "     │" + '\n'
+
         for y in range(self.BOARD_SIZE):
-            printLine("│ " + f"{str(y+1):2} ")
+            output += "│ " + f"{str(y+1):2} "
+
             for x in range(self.BOARD_SIZE):
-                printLine("  ")
-                target_grid: int = self.board.grid[x][y]
-                if target_grid == 0:
-                    printLine("·")
-                elif target_grid > 0:
-                    printLine("○")
+                output += "  "
+
+                target_point: int = self.board.grid[x][y]
+                if target_point > 0:
+                    output += "○"
+                elif target_point < 0:
+                    output += "●"
                 else:
-                    printLine("●")
-            print(f"  {str(y+1):2}" + " │")
-        print("│    " + ''.join(f" {x:2}" for x in range(1, self.BOARD_SIZE + 1)) + "     │")
-        print("└─" + "───"*(self.BOARD_SIZE+2) + "──┘")
+                    output += "*" if (
+                        all(i in (3, self.BOARD_SIZE-4) for i in (x, y))
+                        or self.BOARD_SIZE%2 and all(i in (self.BOARD_SIZE//2, 3, self.BOARD_SIZE-4) for i in (x, y))
+                        ) else "·"
+
+            output += f"  {str(y+1):2}" + " │" + '\n'
+        output += "│    " + ''.join(f" {x:2}" for x in range(1, self.BOARD_SIZE + 1)) + "     │" + '\n'
+        output += "└─" + "───"*(self.BOARD_SIZE+2) + "──┘" + '\n'
+        print(output)
     
     def checkWinByLine(self, x: int, y: int,
                             dx: int, dy: int) -> int:
