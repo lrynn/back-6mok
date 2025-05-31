@@ -30,15 +30,14 @@ while True:
         print(f"You have {player_this_turn.stone} stones.")
         print("Please input the coordination where to place stone. If you want to save this turn, just input 0.")
 
+        input_temp = input()
         try:
-            input_temp = input()
+            x, y = map(int, input_temp.split())
+        except:
             if input_temp == '0':
                 break
             if input_temp == '-1':
                 quit()
-
-            x, y = map(int, input_temp.split())
-        except:
             print("Wrong input! Please check it and repeat.")
             continue
 
