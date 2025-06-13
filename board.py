@@ -8,9 +8,10 @@ def printLine(values) -> None:
 
 
 class Board:
-    def __init__(self, size: int) -> None:
+    def __init__(self, size: int, stones_need_to_end: int = 6) -> None:
         self.SIZE: Final[int] = size
         self.grid: list = [[0]*size for _ in range(size)]
+        self.stones_need_to_end: int = stones_need_to_end
 
     def isStonePlacedIn(self, x: int, y: int) -> bool:
         printDebug(4, f"somewhere noticed if stone has placed at ({x}, {y}).")
@@ -88,8 +89,8 @@ class BoardStatusProvider:
         
             if count:
                 printDebug(4, f"count {count} at ({nx}, {ny}), diff: ({dx}, {dy}).")
-            if abs(count) > 6:
-                return count // 6
+            if abs(count) > self.board.stones_need_to_end:
+                return count // self.board.stones_need_to_end
                 
             nx += dx
             ny += dy

@@ -5,12 +5,14 @@ from board import Board, BoardStatusProvider
 from player import Player
 
 class Game:
-    def __init__(self, board_size: int, player_by_team: int) -> None:
+    def __init__(self, board_size: int, player_by_team: int, stones_gain_by_turn: int = 2) -> None:
         self.board = Board(board_size)
         self.boardStatus = BoardStatusProvider(self.board)
         
         self.players = [[Player(self.board) for _ in range(player_by_team)] for _ in range(2)]
         self.player_number_by_team: Final[int] = player_by_team
+
+        self.stones_gain_by_turn = stones_gain_by_turn
 
         for i in range(player_by_team):
             self.players[0][i].setTeam(i+1)
