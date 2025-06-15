@@ -1,4 +1,4 @@
-from typing import Final
+from typing import Final, List, Union
 
 from utilities import printDebug
 
@@ -7,15 +7,22 @@ def printLine(values) -> None:
     print(values, end='')
 
 
+class Stone:
+    def __init__(self, team=0, order=0) -> None:
+        self.team: int = team
+        self.order: int = order
+
+
 class Board:
     def __init__(self, size: int, stones_need_to_end: int = 6) -> None:
         self.SIZE: Final[int] = size
-        self.grid: list = [[0]*size for _ in range(size)]
+        self.grid: list[list[Stone]] = [[Stone()]*size for _ in range(size)]
         self.stones_need_to_end: int = stones_need_to_end
+        self.order: int = 0
 
     def isStonePlacedIn(self, x: int, y: int) -> bool:
         printDebug(4, f"somewhere noticed if stone has placed at ({x}, {y}).")
-        return bool(self.grid[x][y])
+        return bool(self.grid[x][y].team)
 
     def placeStone(self, player_number: int, x: int, y: int) -> bool:
         '''
@@ -25,7 +32,9 @@ class Board:
         if self.isStonePlacedIn(x, y):
             return False
         
-        self.grid[x][y] = player_number
+        self.grid[x][y] = Stone(player_number, self.order)
+        self.order += 1
+
         printDebug(2, f"A stone that number {player_number} has placed at ({x}, {y}).")
         return True
     
@@ -35,7 +44,7 @@ class BoardStatusProvider:
         self.board = board
         self.BOARD_SIZE: Final[int] = board.SIZE
 
-    def getStatus(self) -> list[list[int]]:
+    def getStatus(self) -> list[list[Stone]]:
         printDebug(4, "Somewhere tried to get the game status.")
         return self.board.grid
     
@@ -50,7 +59,7 @@ class BoardStatusProvider:
             for x in range(self.BOARD_SIZE):
                 output += "  "
 
-                target_point: int = self.board.grid[x][y]
+                target_point: int = self.board.grid[x][y].team
                 if target_point > 0:
                     output += "○"
                 elif target_point < 0:
@@ -73,19 +82,21 @@ class BoardStatusProvider:
         nx, ny = x, y
 
         while 0 <= nx < self.BOARD_SIZE and 0 <= ny < self.BOARD_SIZE:
+            target_stone = self.board.grid[nx][ny].team
+
             # 아무것도 안놔져있을 경우
             if not self.board.isStonePlacedIn(nx, ny):
                 count = 0
             # 뭔가 놔져있을 경우
             elif count==0:
-                count = self.board.grid[nx][ny] // abs(self.board.grid[nx][ny])
+                count = target_stone // abs(target_stone)
 
             # 같은 팀 돌이 연속될 경우
-            if self.board.grid[nx][ny] * count > 0:
+            if target_stone * count > 0:
                 count += 1 if count>0 else -1
             # 다른 팀 돌이 나올 경우
-            elif self.board.grid[nx][ny] * count < 0:
-                count = 2 if self.board.grid[nx][ny] > 0 else -2
+            elif target_stone * count < 0:
+                count = 2 if target_stone > 0 else -2
         
             if count:
                 printDebug(4, f"count {count} at ({nx}, {ny}), diff: ({dx}, {dy}).")
