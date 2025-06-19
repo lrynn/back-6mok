@@ -1,12 +1,23 @@
-from typing import Union
+from typing import Iterable
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from pydantic import BaseModel
 
-import room
-
+import room, board
 
 # uvicorn main:app --reload
+
+
+# POST method로 받을 Request Body
+
+class RequestBody_PlaceStone(BaseModel):
+    x: int
+    y: int
+
+
+rooms: list[room.Room] = [room.Room(0)]
 
 
 app = FastAPI()
@@ -21,7 +32,7 @@ app.add_middleware(
 )
 
 @app.websocket("/chat")
-async def websocket_chat(websocket: WebSocket):
+async def chatMain(websocket: WebSocket):
     print(f"client connected : {websocket.client}")
     await websocket.accept() # client의 websocket접속 허용
     
@@ -34,18 +45,30 @@ async def websocket_chat(websocket: WebSocket):
     except WebSocketDisconnect:
         print("Client disconnected")
 
-@app.get("/game/{roomNumber}/all")
-async def getAllStatus():
+
+@app.get("/games/{roomNumber}/get/all")
+async def getAllStatus(roomNumber: int):
+    status_provider = board.BoardStatusProviderForApi(rooms[roomNumber].game.board)
+    board_models = status_provider.getStatus()
+    return jsonable_encoder(board_models)
+
+player_number = 1 #임시 변수
+@app.post("/games/{roomNumber}/set")
+async def placeStone(roomNumber: int, item: RequestBody_PlaceStone):
+    if rooms[roomNumber].game.board.placeStone(player_number, item.x, item.y):
+        return 200
+    else:
+        return 400
+
+@app.websocket("/games/{roomNumber}/chat")
+async def chatGame(websocket: WebSocket):
     pass
 
-@app.post("/game/{roomNumber}")
-async def placeStone(axis: tuple[int]):
-    pass
 
 # 개발/디버깅용으로 사용할 앱 구동 함수
 def run():
     import uvicorn
-    uvicorn.run(app)
+    uvicorn.run(app, reload=True)
     
 # python main.py로 실행할경우 수행되는 구문
 # uvicorn main:app 으로 실행할 경우 아래 구문은 수행되지 않는다.

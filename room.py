@@ -7,20 +7,21 @@ import account
 from player import Player
 from utilities import printDebug
 
-DEFAULT_BOARD_SIZE: Final[int] = 13
+DEFAULT_BOARD_SIZE: Final[int] = 19
 
 class UserInRoom(Player):
     def __init__(self, board: board.Board, account_id: int) -> None:
         super().__init__(board)
         self.ACCOUNT_ID: Final[int] = account_id
 
+
 class Room:
     def __init__(self, room_id: int) -> None:
         self.ROOM_ID: Final[int] = room_id
         self.participants: Dict[str, List[UserInRoom]] = {"black": [], "white": [], "observer": []}
         self.team_size: int = 1
-        self.board_size = 13
-        self.game = None
+        self.board_size: int = DEFAULT_BOARD_SIZE
+        self.game: game.Game = game.Game(DEFAULT_BOARD_SIZE, 1)
 
     def setBoardSize(self, board_size: int) -> None:
         '''
@@ -93,4 +94,4 @@ class Room:
             printDebug(2, f"Room {self.ROOM_ID} could not to start game but tried.")
             return
         
-        self.game = game.Game(DEFAULT_BOARD_SIZE, len(self.participants["black"]))
+        self.game = game.Game(self.board_size, len(self.participants["black"]))
