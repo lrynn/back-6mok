@@ -10,14 +10,14 @@ from utilities import printDebug
 DEFAULT_BOARD_SIZE: Final[int] = 19
 
 class UserInRoom(Player):
-    def __init__(self, board: board.Board, account_id: int) -> None:
+    def __init__(self, board: board.Board, account_id: str) -> None:
         super().__init__(board)
-        self.ACCOUNT_ID: Final[int] = account_id
+        self.ACCOUNT_ID: Final[str] = account_id
 
 
 class Room:
-    def __init__(self, room_id: int) -> None:
-        self.ROOM_ID: Final[int] = room_id
+    def __init__(self, room_id: str) -> None:
+        self.ROOM_ID: Final[str] = room_id
         self.participants: Dict[str, List[UserInRoom]] = {"black": [], "white": [], "observer": []}
         self.team_size: int = 1
         self.board_size: int = DEFAULT_BOARD_SIZE
