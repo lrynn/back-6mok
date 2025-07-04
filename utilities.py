@@ -11,3 +11,7 @@ def printDebug(level: int, content: str) -> None:
     if DEBUG_LEVEL >= level:
         print(f"[DEBUG lv.{level}] | {content}", end="\n\n" if level==1 else "\n")
     return
+
+# board.printBoardStatus()에서 요소를 줄넘김 없이 출력할 때 사용합니다.
+def printLine(values) -> None:
+    print(values, end='')

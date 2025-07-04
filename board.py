@@ -1,24 +1,33 @@
-from typing import Final, List, Union
+from typing import Final, Union
+from pydantic import BaseModel
 
-from utilities import printDebug
+from utilities import printDebug, printLine
 
-# printBoardStatus()에서 요소를 줄넘김 없이 출력할 때 사용합니다.
-def printLine(values) -> None:
-    print(values, end='')
 
+# Stone 클래스의 Pydantic 모델
+class StoneModel(BaseModel):
+    team: int
+    order: int
 
 class Stone:
     def __init__(self, team=0, order=0) -> None:
         self.team: int = team
         self.order: int = order
 
+    def toModel(self) -> StoneModel:
+        return StoneModel(team=self.team, order=self.order)
+
 
 class Board:
-    def __init__(self, size: int, stones_need_to_end: int = 6) -> None:
+    def __init__(self, size: int = 19, stones_need_to_end: int = 6) -> None:
         self.SIZE: Final[int] = size
         self.grid: list[list[Stone]] = [[Stone()]*size for _ in range(size)]
         self.stones_need_to_end: int = stones_need_to_end
         self.order: int = 0
+
+    def __getitem__(self, index):
+        row, col = index
+        return self.grid[row][col]
 
     def isStonePlacedIn(self, x: int, y: int) -> bool:
         printDebug(4, f"somewhere noticed if stone has placed at ({x}, {y}).")
@@ -48,6 +57,7 @@ class BoardStatusProvider:
         printDebug(4, "Somewhere tried to get the game status.")
         return self.board.grid
     
+    
     def printStatus(self) -> None:
         output: str = ''
         output += "┌─" + "───"*(self.BOARD_SIZE+2) + "──┐" + '\n'
@@ -59,7 +69,7 @@ class BoardStatusProvider:
             for x in range(self.BOARD_SIZE):
                 output += "  "
 
-                target_point: int = self.board.grid[x][y].team
+                target_point: int = self.board[x, y].team
                 if target_point > 0:
                     output += "○"
                 elif target_point < 0:
@@ -156,3 +166,8 @@ class BoardStatusProvider:
         #         return self.checkWinByLine(x, 0, dx, dy)
             
         return False
+    
+class BoardStatusProviderForApi(BoardStatusProvider):
+    def getStatus(self) -> list[list[StoneModel]]: # type: ignore
+        models = [[self.board[row, col].toModel() for col in range(self.BOARD_SIZE)] for row in range(self.BOARD_SIZE)]
+        return models
