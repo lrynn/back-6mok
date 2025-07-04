@@ -1,4 +1,5 @@
 from typing import Final, Dict, List
+from random import choice
 
 import board
 import game
@@ -9,19 +10,38 @@ from utilities import printDebug
 
 DEFAULT_BOARD_SIZE: Final[int] = 19
 
+DEFAULT_ROOM_NAMES: Final[tuple[str, ...]] = (
+    "어서 들어오세요!",
+    "즐겁게 한 판 두실 분😊",
+    "저랑 뜨시죠",
+    "매너게임 하실 분",
+    "신의 한 수 보여드리겠습니다",
+    "IQ 130 이상만이 이 문제를 풀 수 있습니다!",
+    "고수는 묵묵히 돌만 두는 법"
+)
+
 class UserInRoom(Player):
     def __init__(self, board: board.Board, account_id: str) -> None:
         super().__init__(board)
         self.ACCOUNT_ID: Final[str] = account_id
 
+    def __eq__(self, value: object) -> bool:
+        if isinstance(value, UserInRoom):
+            return self.ACCOUNT_ID == value.ACCOUNT_ID
+        elif isinstance(value, str):
+            return self.ACCOUNT_ID == value
+        return False
+
 
 class Room:
     def __init__(self, room_id: str) -> None:
         self.ROOM_ID: Final[str] = room_id
+        self.name: str = choice(DEFAULT_ROOM_NAMES)
         self.participants: Dict[str, List[UserInRoom]] = {"black": [], "white": [], "observer": []}
         self.team_size: int = 1
         self.board_size: int = DEFAULT_BOARD_SIZE
         self.game: game.Game = game.Game(DEFAULT_BOARD_SIZE, 1)
+        self.isStarted: bool = False
 
     def setBoardSize(self, board_size: int) -> None:
         '''
@@ -95,3 +115,4 @@ class Room:
             return
         
         self.game = game.Game(self.board_size, len(self.participants["black"]))
+        self.isStarted = True
