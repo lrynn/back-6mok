@@ -41,7 +41,7 @@ class Room:
         self.team_size: int = 1
         self.board_size: int = DEFAULT_BOARD_SIZE
         self.game: game.Game = game.Game(DEFAULT_BOARD_SIZE, 1)
-        self.isStarted: bool = False
+        self.is_started: bool = False
 
     def setBoardSize(self, board_size: int) -> None:
         '''

@@ -101,7 +101,7 @@ async def openNewRoom(item: RequestBody_Account):
 @app.get("/rooms/all")
 async def getAllRoomsId():
     all_rooms_info = [
-        {"id": room_id, "is_started": room_obj.isStarted}
+        {"id": room_id, "is_started": room_obj.is_started}
         for room_id, room_obj in rooms.items()
     ]
     return jsonable_encoder(all_rooms_info)
@@ -121,7 +121,7 @@ async def getRoomInfo(room_id: str):
         "game": {
             "boardSize": target_room.board_size,
             "teamSize": target_room.team_size,
-            "isStarted": target_room.isStarted
+            "isStarted": target_room.is_started
         }
     }
 
@@ -130,7 +130,7 @@ async def getRoomInfo(room_id: str):
 
 
 #   /ws/{room_id}/{account_id}
-#   
+#   해당 방의 WebSocket에 접속합니다.
 
 async def popRoom(room_id) -> None:
     if not (len(rooms[room_id].participants["black"])+len(rooms[room_id].participants["white"])+len(rooms[room_id].participants["observer"])):
