@@ -21,6 +21,7 @@ PING_INTERVAL = 25
 class RequestBody_PlaceStone(BaseModel):
     x: int
     y: int
+    account_id: str
 
 class RequestBody_Account(BaseModel):
     account_id: str
@@ -230,16 +231,33 @@ async def sse(room_id: str, request: Request):
 
 # 임시 변수
 player_number = 1
-order = 0
 # player_number, order은 Game 클래스에서 알아서 핸들하게 하기
 @app.post("/games/{room_id}/set")
 async def placeStone(room_id: str, item: RequestBody_PlaceStone):
-    global order
     target_room: room.Room = rooms[room_id]
+
+    turn: int = target_room.game.turn
+    order: int = target_room.game.board.order
     
     if (item.x >= target_room.board_size or item.y >= target_room.board_size or
         item.x < 0 or item.y < 0):
         return {501: "Axis out of range"}
+    
+    # 발신자가 돌을 두기에 유효한 차례인지 확인하는 과정
+    for team, participants in target_room.participants.items():
+        if team == "observer":
+            return {400: "Account not a player"}
+        try:
+            # Find the index of the UserInRoom object with matching account_id
+            sender_index = next(i for i, user in enumerate(participants) if getattr(user, "account_id", user) == item.account_id)
+            sender_turn = sender_index * (1 if team == "black" else -1)
+            if sender_turn == turn:
+                print("asdf")
+                break
+            else:
+                return {400: "Player's turn is not now"}
+        except StopIteration:
+            return {403: "Account not in room"}
     
     if target_room.game.board.placeStone(player_number, item.x, item.y):
         order += 1
